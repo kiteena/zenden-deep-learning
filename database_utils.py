@@ -2,6 +2,35 @@ import psycopg2
 import numpy as np
 from sklearn.utils import shuffle
 
+def makeHerokuDBConnection(connection_file):
+    file = open(connection_file, 'r')
+    connection_string = file.readline()
+    conn = psycopg2.connect(connection_string.strip())
+    curr = conn.cursor()
+    return curr
+
+def fetchHerokuData(curr):
+    # user count 
+    curr.execute('SELECT COUNT(*) FROM users')
+    num_users = curr.fetchone()
+
+    # house count
+    curr.execute('SELECT COUNT(*) FROM houses')
+    num_houses = curr.fetchone()
+
+    # users, houses, scores
+    curr.execute('SELECT user_id, house_id, actual_score from matches where actual_score is not null')
+    data = curr.fetchall()
+    data = shuffle(data, random_state=40)
+    data = [list(d) for d in zip(*data)]
+    users, houses, matches = data[0], data[1], data[2]
+    return users, houses, matches, num_users, num_houses
+
+def makePredictionsAndComputeAccuracy(model, test_X, test_y):
+    res = model.predict(test_X)
+    res = [ 1 if r >= 0 else 0 for r in res ]
+    print(len([i for i, j in zip(test_y, res) if i == j])/len(test_y))
+
 def makeDatabaseConnection(connection_file): 
     file = open(connection_file, 'r')
     database = file.readline().strip()
