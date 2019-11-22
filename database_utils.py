@@ -28,7 +28,7 @@ def split_train_and_test(imageurls, labels, numtest):
     testX, testy = imageurls[:numtest], labels[:numtest]
     return trainX, testX, trainy, testy
 
-def makePredictionsAndComputeAccuracyDatabase(test_X, test_y):
+def makePredictionsAndComputeAccuracyDatabase(model, test_X, test_y):
     predictions =[]
     results = model.predict(test_X)
     for r in results: 
